@@ -9,6 +9,6 @@ namespace TestOnline.Interfaces
 {
 	public interface IExamService
 	{
-		public Exam GetByUserID(string userID, string contestID);
+		public Task<Exam> GetByUserID(string userID, string contestID);
 	}
 }

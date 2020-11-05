@@ -1,6 +1,7 @@
 using ApplicationCore;
 using ApplicationCore.Entity;
 using AutoMapper;
+using Confluent.Kafka;
 using Infrastructure.DatabaseContext;
 using Infrastructure.Repository;
 using Infrastructure.Repository.Interfaces;
@@ -34,6 +35,15 @@ namespace TestOnline
 		{
 			DatabaseContext.ConnectionString = "server = localhost; port = 3306; user =root; password =1234	; database =elearning";
 			services.AddControllers();
+
+			var consumerConfig = new ConsumerConfig();
+			Configuration.Bind("Kafka:ConsumerConfig", consumerConfig);
+
+			var producerConfig = new ProducerConfig();
+			Configuration.Bind("Kafka:ProducerConfig", producerConfig);
+
+			services.AddSingleton<ConsumerConfig>(consumerConfig);
+			services.AddSingleton<ProducerConfig>(producerConfig);
 
 			services.AddTransient(typeof(IBaseEntityService<>), typeof(BaseService<>));
 			services.AddTransient(typeof(IBaseRepository<>), typeof(BaseRepository<>));
@@ -70,7 +80,7 @@ namespace TestOnline
 			{
 				app.UseDeveloperExceptionPage();
 			}
-
+			app.UseCors();
 
 			app.Use(async (context, next) =>
 			{

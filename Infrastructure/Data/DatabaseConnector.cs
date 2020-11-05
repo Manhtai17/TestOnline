@@ -10,7 +10,7 @@ namespace Infrastructure.Data
 	public class DatabaseConnector : IDisposable
 	{
 		protected readonly IUnitOfWork _unitOfWork;
-		MySqlConnection _sqlConnection;
+		public static MySqlConnection _sqlConnection;
 		MySqlCommand _sqlCommand;
 		public DatabaseConnector()
 		{

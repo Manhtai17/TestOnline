@@ -13,7 +13,7 @@ namespace TestOnline.Controllers
 	[ApiController]
 	public class BaseController<T> : ControllerBase
 	{
-		private readonly IBaseEntityService<T> _baseEntityService;
+		protected readonly IBaseEntityService<T> _baseEntityService;
 
 		public BaseController(IBaseEntityService<T> baseEntityService)
 		{
