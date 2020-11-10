@@ -8,6 +8,7 @@ namespace TestOnline.Interfaces
 {
 	public interface IContestService
 	{
-		IEnumerable<Contest> GetByTermID(string userID);
+		Task<IEnumerable<Contest>> GetByTermID(string termID, int indexPage, int sizePage,string keyword);
+		Task<int> GetTotalRecords(string userID,string keyword);
 	}
 }

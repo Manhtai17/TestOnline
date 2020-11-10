@@ -11,5 +11,7 @@ namespace ApplicationCore.Entity
         public string Password { get; set; }
         public Guid? RoleId { get; set; }
         public string FullName { get; set; }
+        public string Class { get; set; }
+        public string UserCode { get; set; }
     }
 }

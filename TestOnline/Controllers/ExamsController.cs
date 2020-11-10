@@ -1,5 +1,6 @@
 ﻿using ApplicationCore;
 using ApplicationCore.Entity;
+using AutoMapper;
 using Confluent.Kafka;
 using ELearning.KafkaCommon;
 using Infrastructure.Repository.Interfaces;
@@ -10,29 +11,37 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using TestOnline.Interfaces;
+using TestOnline.Utility;
 using static ApplicationCore.Enums.Enumration;
 
 namespace TestOnline.Controllers
 {
-
-	public class ExamsController : BaseController<Exam>
+	[Route("api/[controller]")]
+	[ApiController]
+	public class ExamsController : ControllerBase
 	{
 		private readonly IExamService _examService;
 		private readonly IBaseRepository<Contest> _contestRepo;
 		private readonly ProducerConfig _producerConfig;
-		public ExamsController(IBaseEntityService<Exam> baseEntityService, IExamService examService, ProducerConfig producerConfig, IBaseRepository<Contest> contestRepo) : base(baseEntityService)
+		private readonly IMapper _mapper;
+		private readonly IBaseEntityService<Exam> _baseEntityService;
+		public ExamsController(IBaseEntityService<Exam> baseEntityService, IExamService examService, ProducerConfig producerConfig, IBaseRepository<Contest> contestRepo, IMapper mapper)
 		{
 			_examService = examService;
 			_producerConfig = producerConfig;
 			_contestRepo = contestRepo;
+			_mapper = mapper;
+			_baseEntityService = baseEntityService;
 		}
 		[HttpGet]
-		[Route("{contestID}")]
-		public override async Task<ActionServiceResult> GetEntityByID(string contestID)
+		public async Task<ActionServiceResult> GetEntityByID([FromQuery] string contestID)
 		{
 			StringValues userHeader;
 			Request.Headers.TryGetValue("UserID", out userHeader);
 			var userID = userHeader.FirstOrDefault().ToString();
+			var token = Request.Headers["Authorization"].ToString();
+			var roleName = Utils.GetClaimFromToken(token, "rolename") == "" ? "student" : Utils.GetClaimFromToken(token, "rolename");
+
 			var result = new ActionServiceResult();
 			if (userID == null || string.IsNullOrEmpty(userID) || string.IsNullOrEmpty(contestID))
 			{
@@ -41,11 +50,57 @@ namespace TestOnline.Controllers
 			}
 			else
 			{
-				var response = _examService.GetByUserID(userID, contestID);
-				result.Data = response;
+				var response = await _examService.GetByUserID(contestID);
+				switch (roleName)
+				{
+					case "lecture":
+						result.Data = response;
+						return result;
+					case "student":
+						var exam = response.Where(item => item.UserId.ToString() == userID).FirstOrDefault();
+						result.Data = exam;
+						return result;
+					default:
+						break;
+				}
 			}
 			return result;
+		}
 
+		/// <summary>
+		/// Cập nhật
+		/// </summary>
+		/// <param name="entity">Đối tượng sửa</param>
+		/// <returns></returns>
+		[HttpPut]
+		public async Task<ActionServiceResult> Put([FromBody] Exam entity)
+		{
+			StringValues userHeader;
+			Request.Headers.TryGetValue("UserID", out userHeader);
+			var userID = userHeader.FirstOrDefault().ToString();
+			var result = new ActionServiceResult();
+			if (userID == null || string.IsNullOrEmpty(userID) || entity == null)
+			{
+				result.Success = false;
+				result.Code = ApplicationCore.Enums.Enumration.Code.NotFound;
+			}
+			else
+			{
+				var response = new ActionServiceResult();
+				if (entity == null)
+				{
+					response.Success = false;
+					response.Code = Code.NotFound;
+					response.Message = Resources.NotFound;
+				}
+				else
+				{
+					response = await _baseEntityService.Update(entity);
+					return response;
+				}
+				return response;
+			}
+			return new ActionServiceResult(); 
 		}
 
 		[HttpGet]
@@ -83,18 +138,28 @@ namespace TestOnline.Controllers
 				else
 				{
 					var contest = await _contestRepo.GetEntityByIdAsync(exam.ContestId);
-					if(DateTime.Compare(DateTime.Now, contest.FinishTime) <= 0)
+					if (DateTime.Compare(DateTime.Now, contest.FinishTime) <= 0)
 					{
-						//Todo tinh diem 
+						//Todo tinh diem
 						exam.Point = 10;
 						exam.IsDoing = 0;
 						exam.Status = 1;
-
-						result.Data = exam;
 						await _baseEntityService.Update(exam);
+						result.Data = exam.ExamId;
+					}
+					else
+					{
+						return new ActionServiceResult
+						{
+							Code = Code.NotFound,
+							Data = null,
+							Message = Resources.NotFound,
+							Success = false
+
+						};
 					}
 				}
-				
+
 
 			}
 			return result;

@@ -120,5 +120,13 @@ namespace Infrastructure.Repository.Interfaces
 		/// <returns></returns>
 		Task<int> Delete(object[] param, DatabaseConnector databaseConnector);
 
+		/// <summary>
+		/// Lấy tổng số bản ghi
+		/// </summary>
+		/// <param name="procedureName"></param>
+		/// <param name="parameters"></param>
+		/// <returns></returns>
+		int GetTotalRecords(string procedureName, object[] parameters);
+
 	}
 }

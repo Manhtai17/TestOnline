@@ -1,6 +1,12 @@
-﻿using ApplicationCore.Entity;
+﻿using ApplicationCore.Entitty;
+using ApplicationCore.Entity;
+using AutoMapper;
 using Infrastructure.Repository.Interfaces;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using TestOnline.Interfaces;
 
@@ -11,81 +17,168 @@ namespace TestOnline.Services
 
 		private readonly IExamRepository _examRepo;
 		private readonly IBaseRepository<Contest> _contestRepo;
+		private readonly IMapper _mapper;
 
-		public ExamService(IExamRepository examRepo, IBaseRepository<Contest> contestRepo)
+		public ExamService(IExamRepository examRepo, IBaseRepository<Contest> contestRepo, IMapper mapper)
 		{
 			_examRepo = examRepo;
 			_contestRepo = contestRepo;
+			_mapper = mapper;
 		}
-		public async Task<Exam> GetByUserID(string userID, string contestID)
+
+		public Task<IEnumerable<Exam>> GetByUserID(string contestID)
 		{
-			var result = _examRepo.GetExamByUserID(userID, contestID);
-			if (result == null)
-			{
-				var resultUpdate = 0;
-				do
-				{
-					//Handle goi api tao de thi tu nhom 10
-					var response = new
-					{
-						Questions = "This is de thi ",
-						Answer = "This is dap an",
-					};
-					//
-					var exam = new Exam();
-					exam.ContestId = Guid.Parse(contestID);
-					exam.CreatedDate = DateTime.Now;
-					exam.ModifiedDate = exam.CreatedDate;
-					exam.ExamId = Guid.NewGuid();
-					exam.UserId = Guid.Parse(userID);
-					exam.Question = response.Questions;
-					exam.Answer = response.Answer;
-					exam.IsDoing = 1;
-					exam.Status = 0;
-
-					resultUpdate = _examRepo.Update(exam).Result;
-					result = exam;
-				}
-				while (resultUpdate > 0);
-			}
-			else
-			{
-				var contest =await _contestRepo.GetEntityByIdAsync(result.ContestId.ToString());
-				//đang có người làm 
-				if (result.IsDoing == 1 || DateTime.Compare(contest.StartTime, DateTime.Now) > 0 )
-				{
-					return new Exam();
-				}
-				//Đã submit không cho làm lại (xem đề)
-				else if (result.Status == 1)
-				{
-					result.Question = null;
-					result.Answer = null;
-
-					return result;
-				}
-
-				else if (result.ModifiedDate - result.CreatedDate - TimeSpan.FromMinutes(contest.TimeToDo)> TimeSpan.Zero )
-				{
-					return result;
-				}
-				else if(DateTime.Compare(contest.FinishTime, DateTime.Now) <= 0)
-				{
-					if(result.Status == 0)
-					{
-						result.ModifiedDate = DateTime.Now;
-						result.IsDoing = 0;
-						result.Status = 1;
-						await _examRepo.Update(result);
-					}
-
-					result.IsDoing = 0;
-				}
-
-				
-			}
-
-			return result;
+			return Task.FromResult(_examRepo.GetExamByContestID(contestID));
 		}
+
+
+		//public async Task<object> GetByUserID(string userID, string contestID, string roleName)
+		//{
+		//	var result = _examRepo.GetExamByContestID(contestID);
+		//	switch (roleName)
+		//	{
+		//		case "lecture":
+		//			return result;
+		//		case "student":
+		//			var exam = result.Where(item => item.UserId.ToString() == userID).FirstOrDefault();
+		//			if (exam == null)
+		//			{
+		//				//Handle goi api tao de thi tu nhom 10
+		//				var response = JsonConvert.SerializeObject("[{ 'Question':'Day la cau hoi','type':1,'Answer':'|Dap an 1|Dap an 2 |Dap an 3'},{ 'Question':'Day la cau hoi','type':1,'Answer':'|Dap an 1|Dap an 2 |Dap an 3'},{ 'Question':'Day la cau hoi','type':1,'Answer':'|Dap an 1|Dap an 2 |Dap an 3'}]");
+		//				//
+		//				var examRes = new Exam();
+		//				examRes.ContestId = Guid.Parse(contestID);
+		//				examRes.CreatedDate = DateTime.Now;
+		//				examRes.ModifiedDate = exam.CreatedDate;
+		//				examRes.ExamId = Guid.NewGuid();
+		//				examRes.UserId = Guid.Parse(userID);
+		//				examRes.Question = response;
+		//				//exam.Answer = response.Answer;
+		//				exam.IsDoing = 1;
+		//				exam.Status = 0;
+
+		//				await _examRepo.UpdateAsync(exam);
+		//				return examRes;
+		//			}
+		//			else
+		//			{
+		//				return exam;
+		//			}
+
+
+		//		default:
+		//			break;
+		//	}
+
+		//	return result;
+		//}
+
+
+		//public async Task<Exam> GetExamForStudent(string userID,string contestID,IEnumerable<Exam> exams)
+		//{
+		//	var exam = exams.Where(item => item.UserId.ToString() == userID).FirstOrDefault();
+		//	if (exam == null)
+		//	{
+		//		//Handle goi api tao de thi tu nhom 10
+		//		var response = new List<Question>{
+		//					new Question{
+		//						QuestionID ="123",
+		//						QuestionTitle="Day la cau hoi",
+		//						Type=1,
+		//						Answer="|Dap an 1|Dap an 2 |Dap an 3"
+		//					}
+		//				};
+		//		//
+		//		var examRes = new Exam();
+		//		examRes.ContestId = Guid.Parse(contestID);
+		//		examRes.CreatedDate = DateTime.Now;
+		//		examRes.ModifiedDate = exam.CreatedDate;
+		//		examRes.ExamId = Guid.NewGuid();
+		//		examRes.UserId = Guid.Parse(userID);
+		//		examRes.Question = response;
+		//		//exam.Answer = response.Answer;
+		//		exam.IsDoing = 1;
+		//		exam.Status = 0;
+
+		//		await _examRepo.UpdateAsync(exam);
+		//		return examRes;
+		//	}
+		//	else
+		//	{
+		//		var contest = await _contestRepo.GetEntityByIdAsync(contestID);
+		//		if (exam.Status == 1 || DateTime.Compare(contest.FinishTime, DateTime.Now) <= 0)
+		//		{
+		//			exam.Question = null;
+		//			exam.Answer = null;
+
+		//			return exam;
+		//		}
+		//		else
+		//		{
+
+		//			//đang có người làm 
+		//			if (exam.IsDoing == 1 || DateTime.Compare(contest.StartTime, DateTime.Now) > 0)
+		//			{
+		//				return new Exam();
+		//			}
+		//			var lastExam = exams.OrderByDescending(item => item.ModifiedDate).Take(1);
+		//			if ((exam.ModifiedDate - exam.CreatedDate - TimeSpan.FromMinutes(contest.TimeToDo) > TimeSpan.Zero && DateTime.Now - exam.ModifiedDate > TimeSpan.FromSeconds(30))
+		//				)
+		//			{
+		//				return exam;
+		//			}
+		//			if (DateTime.Compare(contest.FinishTime, DateTime.Now) <= 0)
+		//			{
+
+		//				exam.IsDoing = 0;
+		//				exam.Status = 1;
+		//				await _examRepo.Update(exam);
+
+		//				exam.Question = null;
+		//				exam.Answer = null;
+		//				return exam;
+		//			}
+
+		//		}
+		//		//var contest = await _contestRepo.GetEntityByIdAsync(contestID);
+		//		//đang có người làm 
+		//		if (exam.IsDoing == 1 || DateTime.Compare(contest.StartTime, DateTime.Now) > 0)
+		//		{
+		//			return new Exam() ;
+		//		}
+		//		//Đã submit không cho làm lại (xem đề)
+		//		if (exam.Status == 1)
+		//		{
+		//			exam.Question = null;
+		//			exam.Answer = null;
+
+		//			return exam ;
+		//		}
+		//		//var lastExam = exams.OrderByDescending(item=>item.ModifiedDate).Take(1) ;
+		//		if (( exam.ModifiedDate - exam.CreatedDate - TimeSpan.FromMinutes(contest.TimeToDo) > TimeSpan.Zero &&  DateTime.Now-exam.ModifiedDate > TimeSpan.FromSeconds(30))
+		//			|| 
+		//			)
+		//		{
+		//			return exam;
+		//		}
+		//		if (DateTime.Compare(contest.FinishTime, DateTime.Now) <= 0)
+		//		{
+		//			if(exam.Status == 0)
+		//			{
+		//				exam.IsDoing = 0;
+		//				exam.Status = 1;
+		//				await _examRepo.Update(exam);
+		//			}
+		//			else
+		//			{
+		//				exam.IsDoing = 0;
+		//			}
+		//			exam.Question = null;
+		//			exam.Answer = null;
+		//			return exam;
+		//		}
+		//	}
+		//	return new Exam();
+		//}
 	}
 }

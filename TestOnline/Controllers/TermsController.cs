@@ -1,27 +1,26 @@
 ﻿using ApplicationCore.Entity;
-using Google.Protobuf.WellKnownTypes;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Primitives;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using TestOnline.Interfaces;
 
 namespace TestOnline.Controllers
 {
 	[Route("api/[controller]")]
 	[ApiController]
-	public class TermsController : BaseController<Term>
+	public class TermsController : ControllerBase
 	{
 		private readonly ITermService _termService;
-		private readonly IContestService _contestService;
-		public TermsController(IBaseEntityService<Term> baseEntityService, ITermService termService, IContestService contestService) : base(baseEntityService)
+		private readonly IBaseEntityService<Term> _baseEntityService;
+		public TermsController(IBaseEntityService<Term> baseEntityService, ITermService termService, IContestService contestService) 
 		{
 			_termService = termService;
-			_contestService = contestService;
+			_baseEntityService = baseEntityService;
 		}
 		[HttpGet]
-		[Route("paging/{index}/{size}")]
-		public ActionServiceResult Paging(int index, int size)
+		public async Task<ActionServiceResult> Paging(string keyword,int index=1, int size=15)
 		{
 			StringValues userHeader;
 			Request.Headers.TryGetValue("UserID", out userHeader);
@@ -34,33 +33,34 @@ namespace TestOnline.Controllers
 			}
 			else
 			{
-				var response = _termService.Paging(userID, index, size);
+				var response = await _termService.Paging(userID, index, size,keyword);
 				result.Data = response;
+				result.TotalRecords = await _termService.GetTotalRecords(userID,keyword);
 			}
 			return result;
 
 		}
 
-		[HttpGet]
-		[Route("{termID}/Contests/")]
-		public ActionServiceResult GetContestsByTermID(string termID)
-		{
-			StringValues userHeader;
-			Request.Headers.TryGetValue("UserID", out userHeader);
-			var userID = userHeader.FirstOrDefault().ToString();
-			var result = new ActionServiceResult();
-			if (userID == null || string.IsNullOrEmpty(userID) || string.IsNullOrEmpty(termID))
-			{
-				result.Success = false;
-				result.Code = ApplicationCore.Enums.Enumration.Code.NotFound;
-			}
-			else
-			{
-				var response = _contestService.GetByTermID(termID);
-				result.Data = response;
-			}
-			return result;
+		//[HttpGet]
+		//[Route("{termID}/Contests/")]
+		//public ActionServiceResult GetContestsByTermID(string termID)
+		//{
+		//	StringValues userHeader;
+		//	Request.Headers.TryGetValue("UserID", out userHeader);
+		//	var userID = userHeader.FirstOrDefault().ToString();
+		//	var result = new ActionServiceResult();
+		//	if (userID == null || string.IsNullOrEmpty(userID) || string.IsNullOrEmpty(termID))
+		//	{
+		//		result.Success = false;
+		//		result.Code = ApplicationCore.Enums.Enumration.Code.NotFound;
+		//	}
+		//	else
+		//	{
+		//		var response = _contestService.GetByTermID(termID);
+		//		result.Data = response;
+		//	}
+		//	return result;
 
-		}
+		//}
 	}
 }

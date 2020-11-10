@@ -7,6 +7,6 @@ namespace Infrastructure.Repository.Interfaces
 {
 	public interface ITermRepository
 	{
-		IEnumerable<Term> Paging(string userID, int pageIndex, int pageSize);
+		IEnumerable<Term> Paging(string userID, int pageIndex, int pageSize,string keyword);
 	}
 }

@@ -8,6 +8,7 @@ namespace TestOnline.Interfaces
 {
 	public interface ITermService
 	{
-		public IEnumerable<Term> Paging(string userID, int pageIndex, int pageSize);
+		 Task<IEnumerable<Term>> Paging(string userID, int pageIndex, int pageSize,string keyword);
+		Task<int> GetTotalRecords(string userID, string keyword);
 	}
 }

@@ -7,6 +7,6 @@ namespace Infrastructure.Repository.Interfaces
 {
 	public interface IContestRepository
 	{
-		IEnumerable<Contest> GetByTermID(string userID);
+		IEnumerable<Contest> GetByTermID(string userID, int indexPage, int sizePage,string keyword);
 	}
 }

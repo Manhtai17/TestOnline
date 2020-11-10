@@ -9,5 +9,7 @@ namespace ApplicationCore.Entity
         public Guid TermId { get; set; }
         public string TermName { get; set; }
         public int? Classes { get; set; }
+
+        public string TermCode { get; set; }
     }
 }

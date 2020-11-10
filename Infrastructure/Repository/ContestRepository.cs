@@ -9,9 +9,9 @@ namespace Infrastructure.Repository
 {
 	public class ContestRepository : BaseRepository<Contest>,IContestRepository
 	{
-		public IEnumerable<Contest> GetByTermID(string termID)
+		public IEnumerable<Contest> GetByTermID(string termID, int indexPage, int sizePage,string keyword)
 		{
-			var result = (GetEntitites("Proc_GetContestsByTermID", new object[] {termID })).Result;
+			var result = (GetEntitites("Proc_GetContestsByTermID", new object[] {termID,indexPage,sizePage,keyword })).Result;
 			return result;
 		}
 	}

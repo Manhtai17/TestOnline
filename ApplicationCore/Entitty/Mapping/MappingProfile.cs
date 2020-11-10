@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using ApplicationCore.Entitty;
+using AutoMapper;
 
 namespace ApplicationCore.Entity
 {
@@ -7,7 +8,7 @@ namespace ApplicationCore.Entity
         public MappingProfile()
         {
            
-            //CreateMap<Employee, DeclarationDetail>();
+            CreateMap<Exam, ExamDTO>();
             //CreateMap<DeclarationDetail, Employee>();
 
         }

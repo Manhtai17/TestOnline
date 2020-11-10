@@ -8,9 +8,9 @@ namespace Infrastructure.Repository
 {
 	public class ExamRepository : BaseRepository<Exam>, IExamRepository
 	{
-		public Exam GetExamByUserID(string userID, string contestID)
+		public IEnumerable<Exam> GetExamByContestID(string contestID)
 		{
-			var result = GetEntity("Proc_GetExamByUserID", new object[] { userID, contestID }).Result;
+			var result = GetEntities("Proc_GetExamByUserID", new object[] { contestID });
 			return result;
 		}
 	}

@@ -45,6 +45,9 @@ namespace Infrastructure.Repository
 			var storeName = DatabaseUtility.GeneateStoreName<T>(ProcdureTypeName.Get);
 			return await Task.FromResult(GetData(storeName, null).ToList());
 		}
+
+
+
 		/// <summary>
 		/// Lấy danh sách các đối tượng theo một bộ tham số truyền vào
 		/// </summary>
@@ -68,6 +71,15 @@ namespace Infrastructure.Repository
 			var temp = GetData(procedureName, parameters);
 			return temp;
 		}
+
+
+		public int GetTotalRecords(string procedureName, object[] parameters)
+		{
+			var temp = GetData(procedureName, parameters);
+			return temp.Count();
+		}
+
+
 		//public IEnumerable<object> GetEntity(string procedureName, object[] parameters)
 		//{
 		//    return GetData()

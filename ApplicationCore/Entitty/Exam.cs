@@ -1,4 +1,5 @@
-﻿using ApplicationCore.Entity;
+﻿using ApplicationCore.Entitty;
+using ApplicationCore.Entity;
 using System;
 using System.Collections.Generic;
 
@@ -14,7 +15,7 @@ namespace ApplicationCore.Entity
         public ulong? IsDoing { get; set; }
         public DateTime? CreatedDate { get; set; }
         public DateTime? ModifiedDate { get; set; }
-        public string Question { get; set; }
+        public Object Question { get; set; }
         public string Answer { get; set; }
         public string Result { get; set; }
 

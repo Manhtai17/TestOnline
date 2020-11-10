@@ -11,6 +11,7 @@ namespace ApplicationCore.Entity
         public string Message { get; set; }
         public Code Code { get; set; }
         public object Data { get; set; }
+        public int TotalRecords { get; set; }
 
         /// <summary>
         /// Hàm khởi tạo mặc định
@@ -21,6 +22,7 @@ namespace ApplicationCore.Entity
             Message = "Success";
             Code = Code.Success;
             Data = null;
+            TotalRecords = 0;
         }
     }
 }

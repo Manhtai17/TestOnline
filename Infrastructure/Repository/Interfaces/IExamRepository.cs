@@ -7,6 +7,6 @@ namespace Infrastructure.Repository.Interfaces
 {
 	public interface IExamRepository : IBaseRepository<Exam>
 	{
-		public Exam GetExamByUserID(string userID, string contestID);
+		public IEnumerable<Exam> GetExamByContestID(string contestID);
 	}
 }
