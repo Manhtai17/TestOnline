@@ -24,5 +24,14 @@ namespace ApplicationCore.Entity
             Data = null;
             TotalRecords = 0;
         }
-    }
+
+		public ActionServiceResult(bool success, string message, Code code, object data, int totalRecords)
+		{
+			Success = success;
+			Message = message;
+			Code = code;
+			Data = data;
+			TotalRecords = totalRecords;
+		}
+	}
 }

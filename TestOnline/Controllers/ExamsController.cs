@@ -59,7 +59,34 @@ namespace TestOnline.Controllers
 					case "student":
 						var exam = response.Where(item => item.UserId.ToString() == userID).FirstOrDefault();
 						result.Data = exam;
-						return result;
+
+						if (exam == null)
+						{
+							//Handle goi api tao de thi tu nhom 10
+							var res = JsonConvert.DeserializeObject("[{'Question':'Day la cau hoi','type':1,'Answer':'|Dap an 1|Dap an 2 |Dap an 3'},{ 'Question':'Day la cau hoi','type':1,'Answer':'|Dap an 1|Dap an 2 |Dap an 3'},{ 'Question':'Day la cau hoi','type':1,'Answer':'|Dap an 1|Dap an 2 |Dap an 3'}]");
+							//
+							var examRes = new Exam();
+							examRes.ContestId = Guid.Parse(contestID);
+							examRes.CreatedDate = DateTime.Now;
+							examRes.ModifiedDate = DateTime.Now;
+							examRes.ExamId = Guid.NewGuid();
+							examRes.UserId = Guid.Parse(userID);
+							examRes.Question = response;
+							//exam.Answer = response.Answer;
+							examRes.IsDoing = 1;
+							examRes.Status = 0;
+
+							await _baseEntityService.Insert(examRes);
+							return new ActionServiceResult(true,Resources.Success, Code.Success,examRes,0);
+						}
+						else
+						{
+							exam.ModifiedDate = DateTime.Now;
+							result.Data = exam;
+							await _baseEntityService.Update(exam);
+							return result;
+						}
+						
 					default:
 						break;
 				}
